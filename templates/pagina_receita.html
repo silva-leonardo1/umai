@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="pt-br" data-bs-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <title>Receita: {{ receita.title }} - Umai</title> 
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/static/cover.css" rel="stylesheet" />
+    
+    <style>
+      /* =========================================
+         1. CSS DO HEADER (EXATAMENTE O SEU)
+         ========================================= */
+      #main-header {
+        position: fixed; top: 0; left: 0; width: 100%; z-index: 1030;
+        background-color: rgba(33, 37, 41, 0.95);
+        transition: all 0.4s ease; padding: 1rem 0;
+      }
+      #main-header.scrolled { padding: 0.4rem 0 !important; }
+      
+      .user-dropdown { position: relative; display: inline-block; }
+      .dropbtn {
+          background: none; border: none; color: white !important;
+          cursor: pointer; font-size: 16px; font-weight: bold;
+          display: flex; align-items: center; gap: 6px; padding: 5px 10px;
+          border-radius: 5px; transition: background 0.3s;
+      }
+      .dropbtn:hover { background-color: rgba(255,255,255,0.1); }
+      .dropdown-content {
+          display: none; position: absolute; right: 0; top: 100%;
+          background-color: #fff; min-width: 180px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+          border-radius: 8px; z-index: 9999; text-align: left; overflow: hidden; margin-top: 5px;
+      }
+      .dropdown-content a { color: #333; padding: 12px 16px; text-decoration: none; display: block; font-size: 14px; }
+      .dropdown-content a:hover { background-color: #f1f1f1; }
+      .logout-link { color: #dc3545 !important; border-top: 1px solid #eee; }
+      .show { display: block !important; }
+      .arrow { font-size: 10px; }
+
+      /* =========================================
+         2. AJUSTES GERAIS E CORREÇÕES
+         ========================================= */
+      body { 
+          background-color: #212529; 
+          color: #fff; 
+          padding-top: 70px; 
+          background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/static/img/pizza.jpg');
+          background-size: cover;
+          background-position: center;
+          background-attachment: fixed;
+          min-height: 100vh;
+      }
+      
+      /* Mantém a proporção da imagem bonita */
+      .recipe-image-wrapper { 
+        aspect-ratio: 16 / 9; 
+        overflow: hidden; 
+        border-radius: 8px;
+        background-color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .img-fluid { 
+        width: 100%; 
+        height: 100%; 
+        object-fit: cover; 
+      }
+
+      /* Correção do texto */
+      .content-block {
+          white-space: pre-wrap; /* Mantém quebras de linha */
+          font-size: 1.1rem;
+          line-height: 1.7;
+          color: #e0e0e0;
+      }
+
+      /* Container branco/cinza semi-transparente para o conteúdo não sumir no fundo */
+      .main-content-bg {
+          background-color: rgba(33, 37, 41, 0.85); /* Dark do bootstrap com transparência */
+          border-radius: 12px;
+          border: 1px solid rgba(255,255,255,0.1);
+      }
+    </style>
+  </head>
+ 
+  <body class="text-bg-dark">
+    
+    <header id="main-header">
+      <div class="container d-flex justify-content-between align-items-center position-relative">
+        <h3 class="mb-0" style="margin-left: 4px;">Umai</h3>
+        
+        <nav class="nav nav-masthead justify-content-center position-absolute start-50 translate-middle-x">
+          <a class="nav-link py-1 px-3 text-white-50" href="/">Home</a>
+          <a class="nav-link py-1 px-3 text-white-50" href="/receitas">Recipes</a>
+          <a class="nav-link py-1 px-3 text-white-50" href="/enviar_receita">Send recipe</a>
+        </nav>
+        
+        <div class="right-user-area d-flex align-items-center gap-2" style="padding-right: 4px;">
+            {% if current_user.is_authenticated %}
+                <div class="user-dropdown">
+                    <button class="dropbtn" onclick="toggleDropdown(event)">
+                        {{ current_user.username if current_user.username else 'My Account' }} 
+                        <span class="arrow">▼</span>
+                    </button>
+                    <div id="myDropdown" class="dropdown-content">
+                        <a href="{{ url_for('user') }}">Profile</a>
+                        <a href="{{ url_for('user') }}">My Recipes</a>
+                        <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="d-flex gap-2 justify-content-end">
+                    <button type="button" class="btn btn-outline-light btn-sm custom-login-btn" data-bs-toggle="modal" data-bs-target="#modallogin">Log-in</button>
+                    <button type="button" class="btn btn-light btn-sm custom-signup-btn" data-bs-toggle="modal" data-bs-target="#modalSignin">Sign up</button>
+                </div>
+            {% endif %}
+        </div>
+      </div>
+    </header>
+
+    <main class="container py-5">
+      
+      <div class="main-content-bg p-4 p-md-5 mt-4 shadow-lg">
+          
+          <div class="text-center mb-5 border-bottom border-secondary pb-4">
+            <h1 class="display-4 fw-bold text-warning mb-2">{{ receita.title }}</h1>
+            {% if receita.author is defined %}
+            <p class="text-white-50 fs-5 mb-0">Enviado por <span class="text-white">{{ receita.author.username }}</span></p> 
+            {% endif %}
+          </div>
+
+          <div class="row g-5">
+            <div class="col-lg-8">
+              <div class="recipe-image-wrapper shadow mb-4">
+                <img src="{{ receita.image_url }}" class="img-fluid" alt="{{ receita.title }}">
+              </div>
+              
+              <div class="mt-5">
+                  <h3 class="text-white border-bottom border-secondary pb-2 mb-3">Modo de Preparo</h3>
+                  <div class="content-block">{{ receita.instructions }}</div>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="card bg-dark border-secondary shadow sticky-top" style="top: 100px; z-index: 1;">
+                <div class="card-header border-secondary bg-transparent py-3">
+                    <h4 class="card-title text-warning mb-0 text-center">Ingredientes</h4>
+                </div>
+                <div class="card-body p-4">
+                   <div class="content-block">{{ receita.ingredients }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+      </div>
+
+    </main>
+
+    <div class="modal fade text-start text-body" id="modalSignin" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content rounded-4 shadow">
+            <div class="modal-header p-5 pb-4 border-bottom-0">
+              <h1 class="fw-bold mb-0 fs-2">Sign up for free</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-5 pt-0">
+              <form class="" method="post" id="signup-form">
+                <div class="form-floating mb-3">
+                  <input type="username" class="form-control rounded-3" id="floatingInput" placeholder="name@example.com" />
+                  <label for="floatingInput">Username</label>
+                </div>
+                <div class="form-floating mb-3">
+                  <input type="password" class="form-control rounded-3" id="floatingPassword" placeholder="Password" />
+                  <label for="floatingPassword">Password</label>
+                </div>
+                <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary btn-light fw-bold border-white bg-white" type="submit">Sign up</button>
+              </form>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade text-start text-body" id="modallogin" tabindex="-1" aria-labelledby="modalSigninLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content rounded-4 shadow">
+            <div class="modal-header p-5 pb-4 border-bottom-0">
+              <h1 class="fw-bold mb-0 fs-2">Log-in</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-5 pt-0">
+              <form class="" method="post" id="login-form">
+                <div class="form-floating mb-3">
+                  <input type="username" class="form-control rounded-3" id="loginUsername" placeholder="name@example.com" />
+                  <label for="loginUsername">Username</label>
+                </div>
+                <div class="form-floating mb-3">
+                  <input type="password" class="form-control rounded-3" id="loginPassword" placeholder="Password" />
+                  <label for="floatingPassword">Password</label>
+                </div>
+                <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary btn-light fw-bold border-white bg-white" type="submit">Log-in</button>
+              </form>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/login.js"></script>
+    
+    <script>
+      function toggleDropdown(event) {
+        if (event) event.stopPropagation();
+        document.getElementById("myDropdown").classList.toggle("show");
+      }
+      window.onclick = function(event) {
+        if (!event.target.matches('.dropbtn') && !event.target.matches('.dropbtn *')) {
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            for (var i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
+                }
+            }
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="pt-br" data-bs-theme="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>New recipe - Umai</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/cover.css" rel="stylesheet" />
+    
+    <style>
+      /* =========================================
+         CSS DO HEADER (MASTER)
+         ========================================= */
+        #main-header {
+        position: fixed;
+        top: 0; left: 0; width: 100%; z-index: 1030;
+        background-color: transparent;
+        transition: all 0.4s ease;
+        padding-top: 1rem; padding-bottom: 1rem;
+      }
+
+      #main-header.scrolled {
+        background-color: rgba(33, 37, 41, 0.95);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        backdrop-filter: blur(5px);
+        padding-top: 0.4rem !important; padding-bottom: 0.4rem !important;
+      }
+
+      body.no-shadow {
+  box-shadow: none !important;
+}
+      /* =========================================
+         ESTILOS DO DROPDOWN (MENU USUÁRIO)
+         ========================================= */
+      .user-dropdown {
+          position: relative;
+          display: inline-block;
+      }
+      .dropbtn {
+          background: none;
+          border: none;
+          color: white !important;
+          cursor: pointer;
+          font-size: 16px;
+          font-weight: bold;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 5px 10px;
+          border-radius: 5px;
+          transition: background 0.3s;
+      }
+      .dropbtn:hover { background-color: rgba(255,255,255,0.1); }
+      
+      .dropdown-content {
+          display: none;
+          position: absolute;
+          right: 0;
+          top: 100%;
+          background-color: #fff;
+          min-width: 180px;
+          box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+          border-radius: 8px;
+          z-index: 9999;
+          text-align: left;
+          overflow: hidden;
+          margin-top: 5px;
+      }
+      .dropdown-content a {
+          color: #333;
+          padding: 12px 16px;
+          text-decoration: none;
+          display: block;
+          font-size: 14px;
+      }
+      .dropdown-content a:hover { background-color: #f1f1f1; }
+      .logout-link { color: #dc3545 !important; border-top: 1px solid #eee; }
+      .show { display: block !important; }
+      .arrow { font-size: 10px; }
+
+      /* =========================================
+         ESTILOS ESPECÍFICOS DESTA PÁGINA
+         ========================================= */
+      body,
+      .hero-banner-section {
+        position: relative;
+        width: 100%;
+        background-attachment: fixed;
+        background-image: 
+            linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+            url('/static/img/table.jpg') !important;
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        padding-top: 8rem; 
+        padding-bottom: 6rem;
+        margin-bottom: 3rem;
+      }
+
+      /* Área de Upload / Preview */
+      .image-upload-container {
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        aspect-ratio: 16/9;
+        margin: 0 auto;
+        border: 2px dashed #495057;
+        border-radius: 15px;
+        background-color: #2b3035;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: block;
+      }
+
+      .image-upload-container:hover {
+        border-color: #ffc107;
+        background-color: #343a40;
+      }
+
+      .upload-placeholder {
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center; color: #adb5bd;
+        pointer-events: none;
+      }
+
+      .upload-icon { font-size: 3rem; display: block; margin-bottom: 10px; }
+
+      #image-preview {
+        width: 100%; height: 100%; object-fit: cover; display: none;
+      }
+
+      /* Inputs estilizados */
+      .form-control {
+        background-color: #2b3035;
+        border: 1px solid #495057;
+        color: #fff;
+      }
+      .form-control:focus {
+        background-color: #2b3035;
+        border-color: #ffc107;
+        color: #fff;
+        box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+      }
+
+      /* Animação ao adicionar ingrediente */
+      .ingredient-row { animation: fadeIn 0.3s ease-in-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+      /* =========================================
+         AJUSTE MOBILE
+         ========================================= */
+      @media (max-width: 991px) {
+        #main-header h3 { display: none !important; }
+        
+        #main-header .container {
+          flex-direction: column !important;
+          align-items: center !important;
+          padding-top: 10px; gap: 15px;
+        }
+        
+        #main-header nav {
+          position: static !important; transform: none !important;
+          margin: 0; width: 100%; justify-content: center;
+        }
+        
+        .right-user-area {
+          justify-content: center !important; width: 100%; padding-right: 0 !important;
+        }
+        
+        #main-header:not(.scrolled) { background-color: transparent !important; }
+      }
+    </style>
+  </head>
+  
+  <body class="bg-dark text-white">
+
+    <header id="main-header">
+      <div class="container d-flex justify-content-between align-items-center position-relative">
+        
+        <h3 class="mb-0" style="margin-left: 4px;">Umai</h3>
+        
+        <nav class="nav nav-masthead justify-content-center position-absolute start-50 translate-middle-x">
+          <a class="nav-link py-1 px-3 text-white-50" href="/">Home</a>
+          <a class="nav-link py-1 px-3 text-white-50" href="/receitas">Recipes</a>
+          <a class="nav-link py-1 px-3 active" aria-current="page" href="/enviar_receita" id="userpage">Send recipe</a>
+        </nav>
+
+        <div class="right-user-area d-flex align-items-center gap-2" style="padding-right: 4px;">
+            
+            {% if current_user.is_authenticated %}
+            <div class="user-dropdown">
+                <button class="dropbtn" onclick="toggleDropdown(event)">
+                    {{ current_user.username if current_user.username else 'My Account' }} 
+                    <span class="arrow">▼</span>
+                </button>
+                
+                <div id="myDropdown" class="dropdown-content">
+                    <a href="{{ url_for('user') }}">Profile</a>
+                    <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+                </div>
+            </div>
+            {% else %}
+              <div class="d-flex gap-2 justify-content-end">
+                <button type="button" class="btn btn-outline-light btn-sm custom-login-btn" data-bs-toggle="modal" data-bs-target="#modallogin">Log-in</button>
+                <button type="button" class="btn btn-light btn-sm custom-signup-btn" data-bs-toggle="modal" data-bs-target="#modalSignin">Sign up</button>
+              </div>
+            {% endif %}
+
+        </div>
+        </div>
+    </header>
+
+    <main class="container pt-0 mt-0 pb-5">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          
+          <div class="text-center mb-5">
+            <h1 class="fw-light text-white">Share your taste with the world!</h1>
+            <p class="lead text-white-50">Add your best recipe to Umai's community.</p>
+          </div>
+          
+          <form id="recipe-form">
+            
+            <div class="card bg-dark border-secondary mb-4">
+                <div class="card-body p-4">
+                    <label class="form-label h5 mb-3 text-white">1. Dish image</label>
+                    
+                    <label for="file-input" class="image-upload-container" id="upload-box">
+                        <div class="upload-placeholder" id="placeholder-content">
+                        <span class="upload-icon">📷</span>
+                        <span>Click to upload an image or drag</span>
+                        </div>
+                        <img id="image-preview" src="" alt="Recipe preview">
+                    </label>
+                    <input type="file" id="file-input" accept="image/*" style="display: none;">
+                    
+                    <div class="mt-3 text-center">
+                        <span class="text-white-50 small d-block mb-2">- or -</span>
+                        <button type="button" class="btn btn-outline-info btn-sm rounded-pill px-4" onclick="gerarImagemIA()">
+                            ✨ Generate AI image
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-dark border-secondary mb-4">
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <label for="titulo" class="form-label h5 mb-2">2. Recipe name</label>
+                        <input type="text" class="form-control form-control-lg" id="titulo" placeholder="e.g. Vanilla cake with chocolate">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label h5 mb-2">3. Ingredients</label>
+                        <p class="text-white-50 small mb-3">List ingredients one by one.</p>
+                        <div id="ingredients-list">
+                            <div class="d-flex gap-2 mb-2 ingredient-row">
+                                <input type="text" class="form-control ingredient-input" placeholder="e.g. 2 tbsp of sugar">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-0">
+                        <label for="instrucoes" class="form-label h5 mb-2">4. Steps</label>
+                        <textarea class="form-control" id="instrucoes" rows="6" placeholder="Describe how to prepare step by step..."></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex gap-3 justify-content-end">
+              <a href="/receitas" class="btn btn-outline-light btn-lg">Cancel</a>
+              <button type="submit" class="btn btn-light btn-lg fw-bold px-5">Share recipe</button>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+    </main>
+
+    <div class="modal fade text-start text-body" id="modalSignin" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content rounded-4">
+          <div class="modal-header p-5 pb-4 border-bottom-0">
+            <h1 class="fw-bold mb-0 fs-2">Sign up for free</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-5 pt-0">
+            <form method="post" id="signup-form">
+              <div class="form-floating mb-3">
+                <input type="username" class="form-control rounded-3" id="floatingInput" placeholder="name@example.com" />
+                <label for="floatingInput">Username</label>
+              </div>
+              <div class="form-floating mb-3">
+                <input type="password" class="form-control rounded-3" id="floatingPassword" placeholder="Password" />
+                <label for="floatingPassword">Password</label>
+              </div>
+              <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit">Sign up</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade text-start text-body" id="modallogin" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content rounded-4">
+          <div class="modal-header p-5 pb-4 border-bottom-0">
+            <h1 class="fw-bold mb-0 fs-2">Log-in</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-5 pt-0">
+            <form method="post" id="login-form">
+              <div class="form-floating mb-3">
+                <input type="username" class="form-control rounded-3" id="loginUsername" placeholder="name@example.com" />
+                <label for="loginUsername">Username</label>
+              </div>
+              <div class="form-floating mb-3">
+                <input type="password" class="form-control rounded-3" id="loginPassword" placeholder="Password" />
+                <label for="loginPassword">Password</label>
+              </div>
+              <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit">Log-in</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/enviar_receita.js"></script>
+    
+    <script>
+      const header = document.getElementById('main-header');
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) { 
+          header.classList.add('scrolled');
+        } else {
+          header.classList.remove('scrolled');
+        }
+      });
+      
+      // FUNÇÃO DO DROPDOWN (Atualizada)
+      function toggleDropdown(event) {
+        if (event) event.stopPropagation();
+        document.getElementById("myDropdown").classList.toggle("show");
+      }
+
+      // Fecha o menu se o usuário clicar fora dele
+      window.onclick = function(event) {
+        if (!event.target.matches('.dropbtn') && !event.target.matches('.dropbtn *')) {
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            for (var i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
+                }
+            }
+        }
+      }
+    </script>
+
+  </body>
+</html>

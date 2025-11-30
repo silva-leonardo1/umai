@@ -1,0 +1,238 @@
+/* ============================
+   RESET & BASE
+============================ */
+:root {
+  --scrollbar-width: 0px;
+}
+
+/* Elementos fixos / que pulam: ajuste conforme seus seletores */
+.header-buttons,
+.bd-mode-toggle,
+.cover-container.fixed-t {
+  padding-right: var(--scrollbar-width);
+  transition: padding-right 150ms ease;
+}
+
+/* Fundo com imagem ocupando TUDO sem bordas */
+body {
+  background-image: 
+    linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
+    url("/static/img/ramen.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  text-shadow: 0 0 0.5rem rgba(0, 0, 0, .9);
+  
+}
+
+/* ============================
+   TEXTO
+============================ */
+h1, .lead {
+  font-weight: 550 !important;
+  text-shadow: 0 0 0.8rem rgba(0,0,0,1);
+}
+
+/* Texto no modo claro */
+[data-bs-theme='light'] body {
+  text-shadow: none !important;
+}
+
+
+/* ============================
+   HEADER & NAVEGAÇÃO
+============================ */
+
+.nav-masthead .nav-link.active {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+/* Modo claro links */
+[data-bs-theme="light"] .nav-masthead .nav-link {
+  color: rgba(0,0,0,0.7);
+}
+[data-bs-theme="light"] .nav-masthead .nav-link.active {
+  color: #000;
+  border-bottom-color: #000;
+}
+
+
+
+/* ============================
+   BOTÕES HEADER
+============================ */
+      .nav-masthead .nav-link {
+        color: rgba(255, 255, 255, .5);
+        font-weight: 700; /* Mantém o negrito pra não pular */
+        position: relative; /* Necessário para posicionar a barra */
+        padding-bottom: 0.25rem;
+      }
+
+      /* Criamos a barra invisível (largura 0) */
+      .nav-masthead .nav-link::after {
+        content: "";
+        position: absolute;
+        left: 50%;          /* Começa no meio */
+        bottom: 0;          /* Cola no chão */
+        transform: translateX(-50%); /* Centraliza perfeitamente */
+        width: 0%;          /* Largura inicial zero */
+        height: 0.25rem;    /* Espessura da borda */
+        background-color: rgba(255, 255, 255, .5); /* Cor da barra no hover */
+        transition: width 0.3s ease; /* A MÁGICA: Anima a largura suavemente */
+      }
+
+      /* Quando passa o mouse ou foca */
+      .nav-masthead .nav-link:hover::after,
+      .nav-masthead .nav-link:focus::after {
+        width: 100%; /* A barra cresce para 100% */
+      }
+
+      /* Estado Ativo (Barra Branca Sólida e Fixa) */
+      .nav-masthead .nav-link.active {
+        color: #fff;
+      }
+      
+      .nav-masthead .nav-link.active::after {
+        width: 100%;        /* Barra cheia */
+        background-color: #fff; /* Barra branca sólida */
+      }
+
+      /* Espaçamento entre links (Mantido) */
+      .nav-masthead .nav-link + .nav-link {
+        margin-left: 1rem;
+      }
+
+.custom-login-btn {
+  border-color: #fff !important;
+  color: #fff !important;
+  background-color: transparent !important;
+}
+
+.custom-login-btn:hover {
+  background-color: rgba(255,255,255,0.1) !important;
+}
+
+[data-bs-theme='light'] .custom-login-btn {
+  border-color: #000 !important;
+  color: #000 !important;
+}
+[data-bs-theme='light'] .custom-login-btn:hover {
+  background-color: rgba(0,0,0,0.05) !important;
+}
+
+/* Botão Sign Up – modo escuro */
+.custom-signup-btn {
+  background-color: #fff !important;
+  color: #000 !important;
+  border-color: #fff !important;
+}
+
+.custom-signup-btn:hover {
+  background-color: #e9ecef !important;
+}
+
+/* Botão Sign Up – modo claro */
+[data-bs-theme='light'] .custom-signup-btn {
+  background-color: rgb(33, 37, 41) !important;
+  color: #fff !important;
+  border-color: #6c757d !important;
+}
+[data-bs-theme='light'] .custom-signup-btn:hover {
+  background-color: #5a6268 !important;
+}
+
+/* Nunca deixa header quebrar linha */
+.nav-masthead, .header-buttons {
+  flex-shrink: 0;
+}
+
+/* Container principal */
+.user-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* O botão com o nome */
+.dropbtn {
+    background-color: transparent;
+    color: white; /* Ou a cor do seu texto do header */
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* A setinha pequena */
+.arrow {
+    font-size: 10px;
+}
+
+.logout-link {
+    color: #d9534f !important;
+}
+
+/* O quadrado branco do menu (invisível por padrão) */
+.dropdown-content {
+    display: none; /* Escondido */
+    position: absolute;
+    right: 0; /* Alinha à direita do nome */
+    background-color: #434242 !important; 
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    border-radius: 8px; /* Bordas arredondadas modernas */
+    z-index: 1;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+/* Links dentro do menu */
+.dropdown-content a {
+    color: #f8f6f6 !important;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+/* Efeito ao passar o mouse */
+.dropdown-content a:hover {
+    background-color: #828282 !important;
+}
+
+/* Link de Logout vermelhinho (opcional, fica estiloso) */
+
+
+/* Linha separadora */
+.dropdown-content hr {
+    margin: 0;
+    border: 0;
+    border-top: 1px solid #eee;
+}
+
+/* Classe que o Javascript adiciona para mostrar o menu */
+.show {
+    display: block;
+}
+
+/* ============================
+   MODAL FIX
+============================ */
+body.modal-open {
+  padding-right: 0 !important;
+  overflow-y: auto !important;
+}
+
+html {
+  scrollbar-gutter: stable;
+  scrollbar-width: none; /* Para Firefox */
+}
+
+html::-webkit-scrollbar {
+  display: none; /* Para Chrome, Safari, Edge, etc. */
+}

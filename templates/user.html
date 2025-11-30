@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-bs-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <title>Perfil de {{ usuario.username }} - Umai</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/static/cover.css" rel="stylesheet" />
+
+    <style>
+      /* =========================================
+         CSS DO HEADER (PADRONIZADO)
+         ========================================= */
+      #main-header {
+        position: fixed; top: 0; left: 0; width: 100%; z-index: 1030;
+        background-color: transparent; transition: all 0.4s ease; padding: 1rem 0;
+      }
+      #main-header.scrolled {
+        background-color: rgba(33, 37, 41, 0.95);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        backdrop-filter: blur(5px); padding: 0.4rem 0 !important;
+      }
+
+      /* =========================================
+         ESTILOS DO DROPDOWN (MENU USUÁRIO)
+         ========================================= */
+      .user-dropdown { position: relative; display: inline-block; }
+      .dropbtn {
+          background: none; border: none; color: white !important;
+          cursor: pointer; font-size: 16px; font-weight: bold;
+          display: flex; align-items: center; gap: 6px;
+          padding: 5px 10px; border-radius: 5px; transition: background 0.3s;
+      }
+      .dropbtn:hover { background-color: rgba(255,255,255,0.1); }
+      
+      .dropdown-content {
+          display: none; position: absolute; right: 0; top: 100%;
+          background-color: #fff; min-width: 180px;
+          box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+          border-radius: 8px; z-index: 9999; text-align: left;
+          overflow: hidden; margin-top: 5px;
+      }
+      .dropdown-content a {
+          color: #333; padding: 12px 16px; text-decoration: none;
+          display: block; font-size: 14px;
+      }
+      .dropdown-content a:hover { background-color: #f1f1f1; }
+      .logout-link { color: #dc3545 !important; border-top: 1px solid #eee; }
+      .show { display: block !important; }
+      .arrow { font-size: 10px; }
+
+      /* =========================================
+         ESTILOS ESPECÍFICOS DO PERFIL
+         ========================================= */
+      body,
+      .hero-banner-section {
+        position: relative; width: 100%;
+        background-image: 
+            linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+            url('/static/img/coffee.jpg') !important;
+        background-position: center; background-size: cover;
+        background-repeat: no-repeat;
+        padding-top: 8rem; padding-bottom: 6rem; margin-bottom: 3rem;
+      }
+
+      .profile-header-card {
+        background: linear-gradient(145deg, #2b3035 0%, #1a1d20 100%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      /* O Círculo Principal */
+      .main-avatar {
+        width: 120px; height: 120px; background-color: #212529;
+        border: 4px solid #ffc107; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 3.5rem; margin: 0 auto 1rem; cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s; position: relative;
+      }
+      .main-avatar:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 193, 7, 0.5); }
+      .edit-icon {
+        position: absolute; bottom: 0; right: 0; background: #ffc107; color: #000;
+        width: 30px; height: 30px; border-radius: 50%; font-size: 1rem;
+        display: flex; align-items: center; justify-content: center;
+        border: 2px solid #2b3035;
+      }
+
+      /* A LISTA HORIZONTAL */
+      #avatar-selector-container {
+        max-height: 0; overflow: hidden;
+        transition: max-height 0.4s ease-in-out, opacity 0.4s;
+        opacity: 0;
+      }
+      #avatar-selector-container.open { max-height: 150px; opacity: 1; margin-top: 20px; }
+
+      /* CORREÇÃO DO SCROLL E ARRASTE */
+      .avatar-scroller {
+        display: flex;
+        overflow-x: auto;
+        gap: 15px;
+        
+        /* FIX 1: Padding lateral pra não cortar as pontas */
+        padding: 20px 40px; 
+        
+        /* FIX 2: Scroll Behavior 'auto' pra não bugar o drag */
+        scroll-behavior: auto; 
+        
+        -ms-overflow-style: none; scrollbar-width: none;
+        
+        /* FIX 3: Cursor de mãozinha */
+        cursor: grab;
+        user-select: none; /* Impede selecionar texto */
+      }
+      .avatar-scroller:active { cursor: grabbing; }
+      .avatar-scroller::-webkit-scrollbar { display: none; }
+
+      .avatar-option {
+        font-size: 2.5rem; background: #343a40; min-width: 70px; height: 70px;
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        cursor: pointer; border: 2px solid transparent; transition: all 0.2s; opacity: 0.6;
+        flex-shrink: 0; /* Impede que o flex esmague os itens */
+      }
+      .avatar-option:hover { opacity: 1; transform: scale(1.1); background: #495057; }
+      .avatar-option.active {
+        border-color: #ffc107; opacity: 1; transform: scale(1.2);
+        background: #212529; box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+      }
+      .selection-arrow {
+        width: 0; height: 0; 
+        border-left: 10px solid transparent; border-right: 10px solid transparent;
+        border-bottom: 10px solid #ffc107; margin: 0 auto -5px auto; display: none;
+      }
+
+      /* CSS dos Cards de Receita */
+      .recipe-card { transition: transform 0.3s; border: none; background: #2b3035; }
+      .recipe-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+      .recipe-card img { transition: transform 0.5s; }
+      .recipe-card:hover img { transform: scale(1.05); }
+
+      /* AJUSTE MOBILE */
+      @media (max-width: 991px) {
+        #main-header h3 { display: none !important; }
+        #main-header .container {
+          flex-direction: column !important; align-items: center !important;
+          padding-top: 10px; gap: 15px;
+        }
+        #main-header nav {
+          position: static !important; transform: none !important;
+          margin: 0; width: 100%; justify-content: center;
+        }
+        .right-user-area {
+          justify-content: center !important; width: 100%; padding-right: 0 !important;
+        }
+        #main-header:not(.scrolled) { background-color: transparent !important; }
+      }
+    </style>
+  </head>
+ 
+  <body>
+    <header id="main-header">
+      <div class="container d-flex justify-content-between align-items-center position-relative">
+        
+        <h3 class="mb-0" style="margin-left: 4px;">Umai</h3>
+        
+        <nav class="nav nav-masthead justify-content-center position-absolute start-50 translate-middle-x">
+          <a class="nav-link py-1 px-3 text-white-50" href="/">Home</a>
+          <a class="nav-link py-1 px-3 text-white-50" href="/receitas">Recipes</a>
+          <a class="nav-link py-1 px-3 text-white-50" href="/enviar_receita">Send recipe</a>
+        </nav>
+        
+        <div class="right-user-area d-flex align-items-center gap-2" style="padding-right: 4px;">
+            {% if current_user.is_authenticated %}
+                <div class="user-dropdown">
+                    <button class="dropbtn" onclick="toggleDropdown(event)">
+                        {{ current_user.username if current_user.username else 'My Account' }} 
+                        <span class="arrow">▼</span>
+                    </button>
+                    <div id="myDropdown" class="dropdown-content">
+                        <a href="{{ url_for('user') }}">Profile</a>
+                        <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="d-flex gap-2 justify-content-end">
+                    <button type="button" class="btn btn-outline-light btn-sm custom-login-btn" data-bs-toggle="modal" data-bs-target="#modallogin">Log-in</button>
+                    <button type="button" class="btn btn-light btn-sm custom-signup-btn" data-bs-toggle="modal" data-bs-target="#modalSignin">Sign up</button>
+                </div>
+            {% endif %}
+        </div>
+
+      </div>
+    </header>
+
+    <main class="container pt-5 mt-0">
+      
+      <div class="p-5 mb-5 rounded-4 text-center profile-header-card position-relative">
+        <div class="container-fluid py-2">
+            
+          {% if current_user.id == usuario.id %}
+            <div class="main-avatar" onclick="toggleAvatarList()" title="Click to change avatar">
+                <span id="current-avatar-display"></span> <div class="edit-icon">✎</div>
+            </div>
+          {% else %}
+            <div class="main-avatar" style="cursor: default; border-color: #6c757d;">
+                <span id="current-avatar-display"></span>
+            </div>
+          {% endif %}
+
+          <div id="avatar-selector-container">
+            <div class="selection-arrow"></div> 
+            <div class="avatar-scroller" id="avatar-list-wrapper">
+            </div>
+            <small class="text-white-50 mt-2 d-block">Click and drag to see more...</small>
+          </div>
+          
+          <h1 class="display-4 fw-bold text-white mt-3">{{ usuario.username }}</h1>
+          <p class="fs-5 text-white-50 mb-3">Umai chef</p>
+
+          <div class="stat-badge text-white" style="background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px;">
+            🍽️ Recipes shared: <strong>{{ usuario.recipes|length }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="text-white mb-4 pb-2 border-bottom border-secondary">Recipe book</h3>
+<div class="row row-cols-1 row-cols-md-3 g-4 pb-5">
+        {% for receita in usuario.recipes %}
+        <div class="col">
+          <a href="{{ url_for('pagina_receita', id=receita.id) }}" class="text-decoration-none">
+              
+              <div class="card h-100 recipe-card shadow-sm text-white">
+                <div style="overflow: hidden; height: 220px;">
+                    <img src="{{ receita.image_url }}" class="card-img-top w-100 h-100" style="object-fit: cover;" />
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title fw-bold text-warning">{{ receita.title }}</h5>
+                  <p class="card-text text-white-50 small">{{ receita.instructions | truncate(80) }}</p>
+                </div>
+                <div class="card-footer border-top border-secondary bg-transparent">
+                  <small class="text-white-50">🔥 Umai</small>
+                </div>
+              </div>
+
+          </a>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+           <h4 class="text-white-50">No recipes shared yet...</h4>
+        </div>
+        {% endfor %}
+      </div>
+    </main>
+    
+    <div class="modal fade" id="modalSignin" tabindex="-1" aria-labelledby="modalSigninLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content rounded-4 shadow">
+            <div class="modal-header p-5 pb-4 border-bottom-0">
+              <h1 class="fw-bold mb-0 fs-2" id="modalSigninLabel">Sign up for free</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-5 pt-0">
+              <form class="" method="post" id="signup-form">
+                <div class="form-floating mb-3">
+                  <input type="username" class="form-control rounded-3" id="floatingInput" placeholder="name@example.com" />
+                  <label for="floatingInput">Username</label>
+                </div>
+                <div class="form-floating mb-3">
+                  <input type="password" class="form-control rounded-3" id="floatingPassword" placeholder="Password" />
+                  <label for="floatingPassword">Password</label>
+                </div>
+                <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary btn-light fw-bold border-white bg-white" type="submit">Sign up</button>
+                <small class="text-body-secondary">By clicking Sign up, you agree to the terms of use.</small>
+                <hr class="my-4" />
+                <h2 class="fs-5 fw-bold mb-3">Or use a third-party</h2>
+                <button class="w-100 py-2 mb-2 btn btn-outline-secondary rounded-3" type="submit">Sign up with Google</button>
+                <button class="w-100 py-2 mb-2 btn btn-outline-primary rounded-3" type="submit">Sign up with Facebook</button>
+                <button class="w-100 py-2 mb-2 btn btn-outline-secondary rounded-3" type="submit">Sign up with GitHub</button>
+              </form>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modallogin" tabindex="-1" aria-labelledby="modalSigninLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content rounded-4 shadow">
+            <div class="modal-header p-5 pb-4 border-bottom-0">
+              <h1 class="fw-bold mb-0 fs-2" id="modalSigninLabel">Log-in</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-5 pt-0">
+              <form class="" method="post" id="login-form">
+                <div class="form-floating mb-3">
+                  <input type="username" class="form-control rounded-3" id="loginUsername" placeholder="name@example.com" />
+                  <label for="loginUsername">Username</label>
+                </div>
+                <div class="form-floating mb-3">
+                  <input type="password" class="form-control rounded-3" id="loginPassword" placeholder="Password" />
+                  <label for="floatingPassword">Password</label>
+                </div>
+                <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary btn-light fw-bold border-white bg-white" type="submit">Log-in</button>
+                <hr class="my-4" />
+                <h2 class="fs-5 fw-bold mb-3">Or use a third-party</h2>
+                <button class="w-100 py-2 mb-2 btn btn-outline-secondary rounded-3" type="submit">Log in with Google</button>
+                <button class="w-100 py-2 mb-2 btn btn-outline-primary rounded-3" type="submit">Log in with Facebook</button>
+                <button class="w-100 py-2 mb-2 btn btn-outline-secondary rounded-3" type="submit">Log in with GitHub</button>
+              </form>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/login.js"></script>
+    
+    <script>
+      // 1. LISTA DE AVATARES
+      const emojis = [
+        "👨‍🍳", "👩‍🍳", "🦊", "🦁", "🐸", "🦄", "🤖", "👽", "👻", "🐯", 
+        "🐼", "🐨", "🐷", "🐵", "💀", "💩", "🤠", "🧙‍♂️", "🧛‍♀️", "🧟"
+      ];
+
+      // Pega o índice salvo no banco
+      let currentAvatarIndex = Number("{{ usuario.avatar_index | default(0) }}");
+      
+      const display = document.getElementById('current-avatar-display');
+      const listWrapper = document.getElementById('avatar-list-wrapper');
+      const container = document.getElementById('avatar-selector-container');
+
+      // Inicializa o avatar principal
+      display.innerText = emojis[currentAvatarIndex] || emojis[0];
+
+      // 2. RENDERIZA A LISTA
+      function renderAvatarList() {
+        listWrapper.innerHTML = '';
+        emojis.forEach((emoji, index) => {
+            const div = document.createElement('div');
+            div.className = `avatar-option ${index === currentAvatarIndex ? 'active' : ''}`;
+            div.innerText = emoji;
+            div.id = `avatar-opt-${index}`;
+            div.onclick = () => selectAvatar(index);
+            listWrapper.appendChild(div);
+        });
+      }
+
+      // 3. ABRE/FECHA LISTA
+      function toggleAvatarList() {
+        if (!container) return;
+        const isOpen = container.classList.contains('open');
+        
+        if (isOpen) {
+            container.classList.remove('open');
+        } else {
+            renderAvatarList();
+            container.classList.add('open');
+            setTimeout(() => {
+                const activeEl = document.getElementById(`avatar-opt-${currentAvatarIndex}`);
+                if (activeEl) {
+                    activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
+            }, 100);
+        }
+      }
+
+      // 4. SALVA ESCOLHA
+      async function selectAvatar(index) {
+        currentAvatarIndex = index;
+        display.innerText = emojis[index];
+        document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('active'));
+        document.getElementById(`avatar-opt-${index}`).classList.add('active');
+
+        try {
+            await fetch('/api/update_avatar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ avatar_index: index })
+            });
+            console.log("Avatar saved!");
+        } catch (e) {
+            console.error("Failed to save avatar", e);
+        }
+      }
+
+      // --- EFEITO: ARRASTAR COM MOUSE (DRAG SCROLL) ---
+      const slider = document.getElementById('avatar-list-wrapper');
+      let isDown = false;
+      let startX;
+      let scrollLeft;
+
+      slider.addEventListener('mousedown', (e) => {
+        isDown = true;
+        slider.classList.add('active');
+        startX = e.pageX - slider.offsetLeft;
+        scrollLeft = slider.scrollLeft;
+      });
+      slider.addEventListener('mouseleave', () => {
+        isDown = false;
+        slider.classList.remove('active');
+      });
+      slider.addEventListener('mouseup', () => {
+        isDown = false;
+        slider.classList.remove('active');
+      });
+      slider.addEventListener('mousemove', (e) => {
+        if(!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - slider.offsetLeft;
+        const walk = (x - startX) * 2; // Velocidade do scroll
+        slider.scrollLeft = scrollLeft - walk;
+      });
+
+      // --- HEADER SCROLL ---
+      window.addEventListener("scroll", function() {
+        var header = document.getElementById("main-header");
+        if (window.scrollY > 50) header.classList.add("scrolled");
+        else header.classList.remove("scrolled");
+      });
+
+      // --- DROPDOWN ---
+      function toggleDropdown(event) {
+        if (event) event.stopPropagation();
+        document.getElementById("myDropdown").classList.toggle("show");
+      }
+      window.onclick = function(event) {
+        if (!event.target.matches('.dropbtn') && !event.target.matches('.dropbtn *')) {
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            for (var i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
+                }
+            }
+        }
+      }
+    </script>
+  </body>
+</html>

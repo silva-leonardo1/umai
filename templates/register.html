@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Custom scrollbar overlay</title>
+<style>
+  /* --------------- layout demo ---------------- */
+  html,body { height:100%; margin:0; }
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    line-height:1.5;
+    /* garante que o espaço do scrollbar seja reservado para evitar "pular" o layout */
+    scrollbar-gutter: stable;
+  }
+
+  .content {
+    padding: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  /* --------- esconder scrollbar nativa sem afetar layout --------- */
+  /* WebKit / Blink */
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  /* Firefox */
+  html { scrollbar-width: none; }
+
+  /* --------------- custom scrollbar (overlay) ---------------- */
+  .custom-scrollbar {
+    position: fixed;               /* overlay na tela */
+    right: 12px;                   /* distância da borda direita (ajusta aqui) */
+    top: 12px;
+    bottom: 12px;
+    width: 12px;                   /* largura do conjunto track+thumb */
+    z-index: 9999;
+    pointer-events: none;          /* por padrão não captura eventos (o track e thumb sim) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .custom-scrollbar .track {
+    position: absolute;
+    inset: 0;                      /* ocupa do top ao bottom */
+    border-radius: 999px;
+    background: transparent;       /* transparente por padrão (ou um leve blur) */
+    pointer-events: auto;          /* permite clique no track */
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 4px 0;
+  }
+
+  /* Visual do track (semi-transparente) */
+  .custom-scrollbar .track::before{
+    content: "";
+    position: absolute;
+    left: 0; right: 0;
+    top: 0; bottom: 0;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.06);  /* ajuste aqui (leve sombra) */
+    backdrop-filter: blur(2px);
+  }
+
+  /* Thumb */
+  .custom-scrollbar .thumb {
+    position: absolute;
+    width: 8px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.45));
+    box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    transform: translateY(0);
+    cursor: pointer;
+    pointer-events: auto;          /* captura pointer events (drag) */
+    touch-action: none;            /* evita comportamento nativo durante drag em touch */
+  }
+
+  /* efeito quando arrastando */
+  .custom-scrollbar .thumb.dragging {
+    transform: scaleX(1.05);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  }
+
+  /* esconde quando não necessário */
+  .custom-scrollbar.hidden { opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .custom-scrollbar { transition: opacity .25s; }
+
+  /* -------- demo content long to show scrollbar -------- */
+  .demo-block { height: 1200px; background: linear-gradient(#fff,#fafafa); margin-bottom: 12px; border-radius: 8px; padding:16px; }
+</style>
+<
