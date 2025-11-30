@@ -17,7 +17,6 @@ Acesse o projeto rodando em produção:
 
 ## 📸 Screenshots
 
-*(Adicione aqui prints do seu site depois. Ex: Tela de login, Uma receita aberta, O modal de criação)*
 
 | Home Page | Página de Receita |
 |:---:|:---:|
