@@ -14,8 +14,8 @@ load_dotenv()
 
 # --- CONFIGURAÇÕES ---
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-app.config['SECRET_KEY'] = 'chave_super_secreta_mudeme'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///database.db')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-only-fallback-key')
 
 # Chaves
 IMGBB_API_KEY = os.getenv("IMGBB_API_KEY")
@@ -67,7 +67,7 @@ def upload_to_imgbb(image_data, is_base64_string=False):
             "key": IMGBB_API_KEY,
             "image": b64_image,
         }
-        response = requests.post("https://api.imgbb.com/1/upload", data=payload)
+        response = requests.post("https://api.imgbb.com/1/upload", data=payload, timeout=15)
         
         if response.status_code == 200:
             return response.json()['data']['url']
@@ -84,7 +84,7 @@ def gerar_bytes_huggingface(titulo):
 
     for i in range(3):
         try:
-            response = requests.post(API_URL, headers=headers, json={"inputs": prompt})
+            response = requests.post(API_URL, headers=headers, json={"inputs": prompt}, timeout=30)
             if response.status_code == 200:
                 return response.content
             elif response.status_code == 503:
@@ -173,7 +173,7 @@ def update_avatar():
 
 # ROTA 1: USADA PELO BOTÃO "GERAR COM IA"
 @app.route('/api/gerar_imagem', methods=['POST'])
-# @login_required  <-- Deixe comentado se estiver testando sem login
+@login_required
 def gerar_imagem_ia():
     data = request.get_json()
     titulo = data.get('title')
@@ -295,4 +295,4 @@ def receita_externa(id):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run(debug=os.getenv('FLASK_DEBUG', '0') == '1')
